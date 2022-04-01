@@ -36,7 +36,7 @@ def get_stim_info(file_name, folder):
             info.append(row)
     return info
     
-def generate_trial_files(condition = 'rise', subject_number=1, n_blocks=3, n_stims=400, n_stims_total=1200, deviant_proportion=0.2, initial_standard=5, minimum_standard = 3):
+def generate_trial_files(condition = 'rise', subject_number=1, n_blocks=3, n_stims=400, n_stims_total=1200, deviant_proportion=0.2, initial_standard=5, minimum_standard = 3, isi=0.6, block_wait=10):
 # generates n_block trial files per subject
 # each block contains n_stim trials, randomized from folder which name is inferred from subject_number
 # returns an array of n_block file names
@@ -46,7 +46,7 @@ def generate_trial_files(condition = 'rise', subject_number=1, n_blocks=3, n_sti
     # glob all deviant files in stim folder
     sound_folder = root_path+'/sounds/%s/'%(condition_folder)
     deviant_files = ['sounds/%s/'%(condition_folder)+os.path.basename(x) for x in glob.glob(sound_folder+'/deviant_*.wav')]
-    n_deviants = len(deviant_files) # normally 3 (standard, looming, receding)
+    n_deviants = len(deviant_files) # normally 1 (rough or tone)
     print("Found %d types of deviants"%(n_deviants))
 
     # glob standard files in stim folder
@@ -78,7 +78,7 @@ def generate_trial_files(condition = 'rise', subject_number=1, n_blocks=3, n_sti
     # flatten list
     stim_list = [trial for trial_pair in stim_list for trial in trial_pair]
 
-    sequence_analytics(stim_list, isi = 0.6, n_blocks=n_blocks, block_wait = 10)
+    sequence_analytics(stim_list, isi = isi, n_blocks=n_blocks, block_wait = block_wait)
     
     # write trials by blocks of n_stims
     trial_files = []
@@ -201,89 +201,41 @@ def play_sound(sound):
         continue 
 
 
-import numpy as np
-def convert_marker_code_to_lines (marker_code, separate_digits = False):
-
-    LINES = np.array([2,1,5,4]) # these are the TTL lines available for triggers
-    lines = []
-    if not separate_digits: 
-        # convert digit in 4-bit word
-        digit_binary = [int(digit) for digit in "{:04b}".format(marker_code)] # ex. 9 -> [1,0,0,1]
-        print(digit_binary)
-        activated_lines = LINES[np.nonzero(digit_binary)[0]] # activate lines for which bit is non null
-        print(activated_lines)
-        lines.append(list(activated_lines))
-    
-    else: 
-        # convert deviant_number to a list of 4 digits (ex. 12 -> [0,0,1,2]) 
-        digits_decimal = [int(digit) for digit in "{:04d}".format(marker_code)]
-        for digit in digits_decimal: 
-            # convert digit in 4-bit word
-            digit_binary = [int(d) for d in "{:04b}".format(digit)] # ex. 9 -> [1,0,0,1]
-            activated_lines = LINES[np.nonzero(a)[0]] # activate lines for which bit is non null
-            lines.append(list(activated_lines))
-
-    return lines
-
-def send_marker(device, marker_code):
-
-    # markers are coded as 4-bit binary words, correspondind to lines [2,1,5,4]
-    # eg. number 1 = binary 0001 = send 1 to line 4
-    # eg. number 3 = binary 0011 = send 1 to line 4 and 1 to line 5
-    # eg. number 8 = binary 1000 = send 1 to line 2, etc. 
-    print('marker: %s '%marker_code,end='')
-
-    activated_lines = convert_marker_code_to_lines(marker_code, separate_digits=False) 
-
-    for lines in activated_lines:
-        print(lines, end=' ')
-        device.activate_line(lines=lines) #10 
-        core.wait(0.005) # wait a short while before we activate another line, if any
-
-
-
 ###########################################################################################
 ###      DEFINE HOW MANY TRIALS IN HOW MANY BLOCKS 
 ###      
 ###########################################################################################
 
 root_path = './'
-N_STIMS_TOTAL = 3000 # total nb of stimuli (dev + std)
+N_STIMS_TOTAL = 500 # total nb of stimuli (dev + std)
 DEVIANT_PROPORTION = 0.2
-N_BLOCKS = 20
+N_BLOCKS = 5
 ISI = .6 # in sec
 JITTER = .05 # in sec.
 BLOCK_WAIT = 10 # in sec.
-SEND_MARKERS = True
 
-LOOMING_PARAMS = {'condition':'looming',
+ROUGH_PARAMS = {'condition':'rough',
                'fixation_cross_color':'deepskyblue',
-               'folder':'looming',
-               'deviants' : ['looming','receding'],  
-               'markers_codes': {'block_begin':11,
-                                  'standard':1, # standard, roughly 80% of time
-                                  'looming':2, # one of 3 types of deviants, with amplitude ramping up
-                                  'receding':3, # one of 3 types of deviants, with amplitude ramping down
-                                  'flat':4} # one of 3 types of deviants, same as standard with longer duration
+               'folder':'rough',
+               'deviants' : ['rough'],  
+               'markers_codes': {'standard':2, # standard, roughly 80% of time
+                                 'rough':5} # one of 2 types of deviants, with rough vocal characteristics
                 }
 
+TONE_PARAMS = {'condition':'tone',
+               'fixation_cross_color':'green',
+               'folder':'tone',
+               'deviants' : ['tone'],  
+               'markers_codes': {'standard':2, # standard, roughly 80% of time
+                                 'tone':8} # one of 2 types of deviants, a tone
+                }
 
-PARAMS = {'looming':LOOMING_PARAMS}
+PARAMS = {'rough':ROUGH_PARAMS,'tone':TONE_PARAMS}
 
 ###########################################################################################
 
-# for EEG
-if(SEND_MARKERS):
-    #stim_tracker = 0    
-    stim_tracker = pyxid2.get_xid_devices()[0]
-    print(stim_tracker)
-    stim_tracker.reset_base_timer()
-    stim_tracker.reset_rt_timer()    
-    stim_tracker.set_pulse_duration(5) # 5ms
-    
-
 # get participant nb, age, sex 
-subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'looming'}
+subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'rough'}
 dlg = gui.DlgFromDict(subject_info, title=u'Own-name')
 if dlg.OK:
     subject_number = subject_info[u'number']
@@ -312,13 +264,15 @@ win = visual.Window(np.array([1920,1080]),fullscr=False,color='black', units='no
 
 # generate data files
 result_file = generate_result_file(condition, subject_number) # renvoie 1 filename en csv
-#n_stims = round(N_STIMS_TOTAL/N_BLOCKS) # nb trials per block
+
 trial_files, standard_file = generate_trial_files(condition=condition,
                                                 subject_number=subject_number,
                                                 n_blocks=N_BLOCKS,
                                                 n_stims=round(N_STIMS_TOTAL/N_BLOCKS),
                                                 n_stims_total=N_STIMS_TOTAL,
-                                                deviant_proportion=DEVIANT_PROPORTION) 
+                                                deviant_proportion=DEVIANT_PROPORTION,
+                                                isi=ISI,
+                                                block_wait=BLOCK_WAIT) 
 
 # start_experiment 
 show_text_and_wait(file_name=root_path+'intro.txt')
@@ -330,9 +284,6 @@ for block_count, trial_file in enumerate(trial_files):
     #show_video()
 
     block_trials = read_trials(trial_file)
-    if(SEND_MARKERS):
-        # send_marker(stim_tracker, 'block_begin')
-        send_marker(stim_tracker, params['markers_codes']['block_begin'])
         
     for trial in block_trials:
         row = [subject_number, subject_name, subject_age, subject_sex, subject_handedness, date, condition, block_count+1, trial_count+1]
@@ -346,12 +297,9 @@ for block_count, trial_file in enumerate(trial_files):
                 if deviant in os.path.basename(trial):
                     stim_type = deviant
         
-        
         # send stim marker
         stim_marker_code = params['markers_codes'][stim_type]
         print('%s: '%stim_type, end='') 
-        if(SEND_MARKERS):
-            send_marker(stim_tracker, stim_marker_code) # EEG
         
         # play sound
         print('file: %s:'%sound)  
