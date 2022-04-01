@@ -235,8 +235,8 @@ PARAMS = {'rough':ROUGH_PARAMS,'tone':TONE_PARAMS}
 ###########################################################################################
 
 # get participant nb, age, sex 
-subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'rough', u'session': 1}
-dlg = gui.DlgFromDict(subject_info, title=u'Own-name')
+subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'rough/tone', u'session': 1}
+dlg = gui.DlgFromDict(subject_info, title=u'Own-name', order= ['number', 'condition', 'session', 'name','age','sex','handedness'] )
 if dlg.OK:
     subject_number = subject_info[u'number']
     subject_name = subject_info[u'name']
