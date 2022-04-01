@@ -1,0 +1,4 @@
+experiment/stimulus_generation/sounds/*.wav
+experiment/data/*
+experiment/python/.ipynb_checkpoints/*
+experiment/stimulus_generation/.ipynb_checkpoints/*
