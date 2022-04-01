@@ -1,4 +1,4 @@
-Dans cette experience, vous allez entendre une alternance de sons comportant des "bips" ainsi que votre prenom.
-Veuillez compter mentalement le nombre de fois ou vous entendrez votre prenom.
 
-(Appuyez sur une touche pour continuer)
+Debut de la sequence MMN rough/tone.
+
+(Appuyez sur une touche pour demarrer)
