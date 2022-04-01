@@ -147,7 +147,7 @@ def generate_result_file(condition, subject_number):
     condition_folder = PARAMS[condition]['folder']
 
     result_file = root_path+'results/%s/results_subj%d'%(condition_folder,subject_number)+ '_condition_' +condition +'_'+date.strftime('%y%m%d_%H.%M')+'.csv'        
-    result_headers = ['subject_number','subject_name','sex','age','handedness','date','condition','block_number','trial_number','sound_file','stim_type','stim_marker_code']
+    result_headers = ['subject_number','subject_name','sex','age','handedness','date','condition','session','block_number','trial_number','sound_file','stim_type','stim_marker_code']
     with open(result_file, 'w+') as file:
         writer = csv.writer(file)
         writer.writerow(result_headers)
@@ -235,7 +235,7 @@ PARAMS = {'rough':ROUGH_PARAMS,'tone':TONE_PARAMS}
 ###########################################################################################
 
 # get participant nb, age, sex 
-subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'rough'}
+subject_info = {u'number':1, u'name':'Bobby', u'age':20, u'sex': u'f/m', u'handedness':'right', u'condition': u'rough', u'session': 1}
 dlg = gui.DlgFromDict(subject_info, title=u'Own-name')
 if dlg.OK:
     subject_number = subject_info[u'number']
@@ -244,6 +244,7 @@ if dlg.OK:
     subject_sex = subject_info[u'sex']  
     subject_handedness = subject_info[u'handedness'] 
     condition = subject_info[u'condition']
+    session = subject_info[u'session']
 else:
     core.quit() #the user hit cancel so exit
 date = datetime.datetime.now()
@@ -286,7 +287,7 @@ for block_count, trial_file in enumerate(trial_files):
     block_trials = read_trials(trial_file)
         
     for trial in block_trials:
-        row = [subject_number, subject_name, subject_age, subject_sex, subject_handedness, date, condition, block_count+1, trial_count+1]
+        row = [subject_number, subject_name, subject_age, subject_sex, subject_handedness, date, condition, session, block_count+1, trial_count+1]
         sound = root_path+trial   
         
         # find stim stype from stimulus filename        
