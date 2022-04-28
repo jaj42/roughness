@@ -6,29 +6,20 @@ Created on Wed Sep 29 17:44:48 2021
 """
 
 import csv
-
-# import codecs
 import datetime
 import glob
 import os
 import random
-
-# coding=utf-8
 import sys
-
-from psychopy import prefs
-
-prefs.general["audioLib"] = ["pyo"]
-import shutil
 import wave
-from fractions import Fraction
-from math import ceil, floor
+from math import floor
 
 import numpy as np
 import pyaudio
-import pyxid2
 import scipy.io.wavfile as wav
-from psychopy import core, event, gui, visual
+from psychopy import core, event, gui, prefs, visual
+
+prefs.general["audioLib"] = ["pyo"]
 
 
 def get_stim_info(file_name, folder):
