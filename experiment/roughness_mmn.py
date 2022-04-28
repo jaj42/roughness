@@ -13,6 +13,7 @@ import random
 import sys
 import wave
 from math import floor
+from pathlib import Path
 
 import numpy as np
 import pyaudio
@@ -106,7 +107,7 @@ def generate_trial_files(
     # write trials by blocks of n_stims
     trial_files = []
     for block, block_num in blockify(stim_list, n_stims):
-        trial_file = (
+        trial_file = Path(
             root_path
             + "/trials/%s/trials_subj%d" % (condition_folder, subject_number)
             + "_condition_"
@@ -117,7 +118,8 @@ def generate_trial_files(
             + date.strftime("%y%m%d_%H.%M")
             + ".csv"
         )
-        print("generate trial file " + trial_file)
+        trial_file.parent.mkdir(parents=True, exist_ok=True)
+        print("generate trial file ", trial_file)
         trial_files.append(trial_file)
         with open(trial_file, "w+", newline="") as file:
             # write header
@@ -181,7 +183,7 @@ def generate_result_file(condition, subject_number):
 
     condition_folder = PARAMS[condition]["folder"]
 
-    result_file = (
+    result_file = Path(
         root_path
         + "results/%s/results_subj%d" % (condition_folder, subject_number)
         + "_condition_"
@@ -190,6 +192,7 @@ def generate_result_file(condition, subject_number):
         + date.strftime("%y%m%d_%H.%M")
         + ".csv"
     )
+    result_file.parent.mkdir(parents=True, exist_ok=True)
     result_headers = [
         "subject_number",
         "subject_name",
